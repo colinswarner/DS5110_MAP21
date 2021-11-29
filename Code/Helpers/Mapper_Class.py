@@ -25,7 +25,7 @@ class Mapper:
     def coords(self, geom):
         return [(point[1],point[0]) for point in geom.coords]
 
-    def quickMap(self, gdf, col):
+    def quickMap(SELF, gdf, col):
         if pd.api.types.is_numeric_dtype(gdf[col]):
             vmin = gdf[col].quantile(.1)
             vmax = gdf[col].quantile(.9)
@@ -39,6 +39,8 @@ class Mapper:
         periodGDF = gdf.loc[gdf.PERIOD == period]
         obsmap = self.quickMap(periodGDF.loc[periodGDF.YEAR==year].drop('points', axis=1), 'obs rel_unrel')
         return obsmap
+    
+    ### ADDITIONS ###
     
     def createMapViews(self, gdf, _variables):
         display(Markdown(f"### Creating Map Views"))
@@ -56,7 +58,7 @@ class Mapper:
                 for variable in self.variables:
                     try:
                         temp_df = gdf.loc[(gdf.YEAR == year) & (gdf.PERIOD == period)][['TMC',variable,'geometry']]
-                        self.maps[year][period][variable] = mapper.quickMap(temp_df, variable)
+                        self.maps[year][period][variable] = self.quickMap(temp_df, variable)
                         print(f"- Created: {year}, {period}, {variable}")
                     except:
                         print(f"- Failed: {year}, {period}, {variable}")
@@ -80,5 +82,4 @@ class Mapper:
     def viewMaps(self):
         @widgets.interact(year=self.years, period=self.periods, variable=self.variables)
         def changeMap(year, period, variable):
-            return mapper.maps[year][period][variable]
-    
+            return self.maps[year][period][variable]
